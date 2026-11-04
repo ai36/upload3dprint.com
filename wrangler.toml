@@ -1,0 +1,19 @@
+name = "upload3dprint"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "dist"
+
+# R2 presigning secrets (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)
+# go to .dev.vars locally and `wrangler pages secret put` in production.
+[vars]
+PUBLIC_API_URL = "http://localhost:8788"
+APP_ORIGINS = "http://localhost:4321,http://localhost:8788,capacitor://localhost,https://localhost"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "upload3dprint"
+database_id = "00000000-0000-0000-0000-000000000000" # placeholder: replace after `wrangler d1 create upload3dprint`
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "upload3dprint-models"

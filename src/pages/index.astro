@@ -1,0 +1,71 @@
+---
+import { SUPPORTED } from '../formats/index.ts';
+const accept = SUPPORTED.map((e) => '.' + e.toLowerCase()).join(',');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instant 3D printing quote | upload3dprint</title>
+    <meta name="description" content={`Upload a ${SUPPORTED.join(', ')} file and get an instant price for PLA or PETG 3D printing, shipped within the US.`} />
+  </head>
+  <body>
+    <main>
+      <h1>Instant 3D printing quote</h1>
+      <p>Upload your model, pick a material and quantity, and see the price and delivery time. US shipping only.</p>
+
+      <label id="drop" class="drop">
+        <input id="file" type="file" accept={accept} disabled />
+        <span>Drop a file here or <u>choose a file</u></span>
+        <small>{SUPPORTED.join(', ')}</small>
+      </label>
+      <p id="message" role="status" aria-live="polite"></p>
+
+      <section id="panel" hidden>
+        <div id="preview" class="preview" aria-label="3D preview: drag to rotate, pinch or scroll to zoom"></div>
+        <div class="options">
+          <label>Units <select id="units"><option value="mm">Millimeters</option><option value="in">Inches</option></select></label>
+          <label>Scale, % <input id="scale" type="number" min="1" max="1000" value="100" inputmode="numeric" /></label>
+          <label>Material <select id="material"></select></label>
+          <label>Color <select id="color"></select></label>
+          <label>Quantity <input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric" /></label>
+        </div>
+        <dl>
+          <dt>Size</dt><dd id="size"></dd>
+          <dt>Volume</dt><dd id="volume"></dd>
+          <dt>Price</dt><dd><strong id="price"></strong> <span id="unit"></span></dd>
+          <dt>Made and delivered in</dt><dd id="days"></dd>
+        </dl>
+        <p id="fit" class="error" hidden></p>
+      </section>
+    </main>
+    <script>
+      import '../upload.ts';
+    </script>
+    <style is:global>
+      body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1d232a; background: #f7f8fa; }
+      main { max-width: 960px; margin: 0 auto; padding: 16px; }
+      h1 { font-size: 1.75rem; margin: 0.5em 0; }
+      .drop { position: relative; display: grid; place-items: center; gap: 4px; padding: 32px 16px; border: 2px dashed #9aa5b1; border-radius: 12px; background: #fff; cursor: pointer; text-align: center; }
+      .drop.over { border-color: #2f6fb0; background: #eef5fc; }
+      .drop input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+      .drop small { color: #5c6773; }
+      .error { color: #b3261e; }
+      #panel:not([hidden]) { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+      .preview { height: 320px; background: #fff; border-radius: 12px; touch-action: none; }
+      .preview canvas { width: 100%; height: 100%; display: block; }
+      .options { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+      .options label { display: grid; gap: 2px; font-size: 0.9rem; }
+      select, input[type='number'] { font: inherit; padding: 6px 8px; min-width: 0; }
+      dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+      dt { color: #5c6773; }
+      dd { margin: 0; }
+      #price { font-size: 1.4rem; }
+      @media (min-width: 760px) {
+        #panel:not([hidden]) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+        .preview { height: 420px; grid-row: span 3; }
+      }
+    </style>
+  </body>
+</html>
