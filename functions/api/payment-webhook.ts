@@ -4,6 +4,7 @@ import { getSettings, loadCatalog } from './catalog.ts';
 import { findOrder, orderItems, setStatus, type Order } from './_orders.ts';
 import { integrations } from '../_integrations/index.ts';
 import { leadDays } from '../../src/pricing.ts';
+import { DELETED } from '../../src/maintenance.ts';
 
 export const onRequestOptions = preflight;
 export const onRequestPost = route(async (ctx) => {
@@ -40,7 +41,9 @@ export const onRequestPost = route(async (ctx) => {
     items: await Promise.all(
       items.map(async (i) => ({
         file: i.filename,
-        download_url: await storage.downloadUrl(i.r2_key),
+        // FR-015 (T038): no link to a deleted file.
+        file_deleted: i.r2_key.startsWith(DELETED),
+        download_url: i.r2_key.startsWith(DELETED) ? null : await storage.downloadUrl(i.r2_key),
         material: i.material,
         color: i.color,
         qty: i.qty,

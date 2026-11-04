@@ -64,7 +64,7 @@ async function orders() {
           el(
             'div',
             { className: 'row' },
-            el('a', { href: i.download_url, textContent: i.filename }),
+            i.download_url ? el('a', { href: i.download_url, textContent: i.filename }) : `${i.filename} (file deleted)`,
             `${i.material}, ${i.color}, × ${i.qty}, ${(i.size_mm ?? []).map((v: number) => v.toFixed(1)).join(' × ')} mm, ${Number(i.volume_cm3).toFixed(2)} cm³, ${usd(i.unit_price_cents)} each`,
           ),
         ),

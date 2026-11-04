@@ -4,6 +4,7 @@ import { admin } from './_auth.ts';
 import { orderItems, type Order } from '../_orders.ts';
 import { integrations } from '../../_integrations/index.ts';
 import { isStatus } from '../../../src/orderStatus.ts';
+import { DELETED } from '../../../src/maintenance.ts';
 
 const LINK_SECONDS = 3600;
 
@@ -23,7 +24,9 @@ export const onRequestGet = admin(async (ctx) => {
         (await orderItems(ctx.env.DB, o.id)).map(async ({ r2_key, bbox, ...i }) => ({
           ...i,
           size_mm: JSON.parse(bbox ?? 'null'),
-          download_url: await storage.downloadUrl(r2_key, LINK_SECONDS),
+          // FR-015 (T038): no link to a deleted file.
+          file_deleted: r2_key.startsWith(DELETED),
+          download_url: r2_key.startsWith(DELETED) ? null : await storage.downloadUrl(r2_key, LINK_SECONDS),
         })),
       ),
     })),

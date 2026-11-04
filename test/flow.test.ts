@@ -162,3 +162,18 @@ test('T035: material price edited in admin changes the public catalog', async ()
   assert.equal((await call(adminCatalog.onRequestPost, e, 'POST', '/api/admin/catalog', { kind: 'setting', key: 'markup', value: 0.5 })).status, 200);
   assert.equal((await call(catalog.onRequestGet, e, 'GET', '/api/catalog')).body.settings.markup, 0.5);
 });
+
+test('T038: no download link for a deleted file, in the admin list and in the operator email', async () => {
+  const e = env();
+  const { model_id } = await upload(e);
+  const item = { model_id, material_id: 'pla', color: 'Black', qty: 1, units: 'mm', size: [20, 20, 20], volume_cm3: 8 };
+  const co = await call(checkout.onRequestPost, e, 'POST', '/api/checkout', { email: 'buyer@b.test', address, items: [item] });
+  const session = new URL(co.body.url, 'http://site.test').searchParams.get('session');
+  // Deleted before payment: the operator email has no link.
+  await e.DB.prepare(`UPDATE models SET r2_key = 'deleted/' || r2_key WHERE id = ?`).bind(model_id).run();
+  await call(webhook.onRequestPost, e, 'POST', '/api/payment-webhook', { type: 'paid', session_id: session });
+  const [op] = await emails(e, 'new_order');
+  assert.deepEqual([op.data.items[0].download_url, op.data.items[0].file_deleted], [null, true]);
+  const it = (await call(orders.onRequestGet, e, 'GET', '/api/admin/orders')).body.orders[0].items[0];
+  assert.deepEqual([it.download_url, it.file_deleted], [null, true]);
+});

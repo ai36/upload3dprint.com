@@ -3,6 +3,12 @@
 Новые записи сверху. Формат: дата — кто — что сделано — ссылки (FR/SC/задачи, файлы).
 
 ## 2026-11-03 — fullstack
+T038 (FR-015): для удалённого файла (`r2_key` с префиксом `DELETED` из `src/maintenance.ts`) ссылка на скачивание не подписывается. В `admin/orders` и в письме `new_order` из `payment-webhook` у позиции `download_url: null` и `file_deleted: true`; страница `/admin` вместо ссылки показывает «<имя файла> (file deleted)». Повторный заказ не делался (этап 6).
+- Файлы: `functions/api/admin/orders.ts`, `functions/api/payment-webhook.ts`, `src/admin.ts`, `test/flow.test.ts` (тест T038).
+- Проверено: `npm test`, 32 из 32; `npm run build` проходит. Ошибки `tsc` в `src/admin.ts` (TS2590) были и до правки.
+- Замечание: `admin/manual-quotes` и `manual-quote` тоже подписывают ссылку без проверки `deleted/`. В T038 их нет, не трогал.
+
+## 2026-11-03 — fullstack
 T037 (FR-015): cron больше не удаляет файл повторно. После удаления файла из R2 строка `models`, которая остаётся ради повторного заказа (P3), получает префикс `deleted/` в `r2_key`; `deleteExpired` такие строки пропускает. Миграция не нужна: `r2_key` NOT NULL UNIQUE, а ключ с префиксом остаётся уникальным.
 - Файлы: `src/maintenance.ts` (константа `DELETED`), `test/maintenance.test.ts` (тест T037).
 - Проверено: `npm test`, 31 из 31; без правки новый тест падает. `wrangler dev --test-scheduled`, два запуска: первый удалил `models/done/f.stl`, второй — `deleted: []`, в D1 `r2_key = deleted/models/done/f.stl`.
