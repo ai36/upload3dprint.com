@@ -17,6 +17,8 @@ export interface Deps {
 }
 
 const DAY = 86400_000;
+/** r2_key prefix of a model whose file is already deleted (T037): the row stays, the key is not deleted again. */
+export const DELETED = 'deleted/';
 const inList = (xs: string[]) => xs.map((x) => `'${x}'`).join(', ');
 const iso = (at: string) => new Date(at.includes('T') ? at : at.replace(' ', 'T') + 'Z');
 
@@ -40,7 +42,7 @@ export async function setRetention(d: Deps) {
 export async function deleteExpired(d: Deps): Promise<string[]> {
   const { results } = await d.db
     .prepare(
-      `SELECT id, r2_key FROM models WHERE expires_at < ? AND id NOT IN
+      `SELECT id, r2_key FROM models WHERE expires_at < ? AND r2_key NOT LIKE '${DELETED}%' AND id NOT IN
          (SELECT oi.model_id FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE o.status IN (${inList(ACTIVE)}))`,
     )
     .bind(d.now.toISOString())
@@ -57,6 +59,7 @@ export async function deleteExpired(d: Deps): Promise<string[]> {
     for (const { id } of drafts.results) await d.db.prepare('DELETE FROM orders WHERE id = ?').bind(id).run();
     // Keep the row of delivered and cancelled orders: it holds the settings for a reorder (P3).
     await d.db.prepare('DELETE FROM models WHERE id = ? AND id NOT IN (SELECT model_id FROM order_items)').bind(m.id).run();
+    await d.db.prepare('UPDATE models SET r2_key = ? WHERE id = ?').bind(DELETED + m.r2_key, m.id).run();
   }
   return results.map((m) => m.r2_key);
 }

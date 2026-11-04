@@ -67,16 +67,16 @@ Worker `workers/cron` (Cron Trigger; у Pages Functions нет расписан�
 | `auth` (оператор) | `isOperator(request)` | Пропускает, если `INTEGRATIONS=stub` |
 | `storage` | `uploadUrl(key, size) → url`, `downloadUrl(key) → url`, `delete(key)` | URL на `/api/files/<key>`: Function пишет и читает через привязку `FILES` (локальный R2 wrangler). Настоящая реализация — подписанные ссылки SigV4 (`upload-url.ts`) |
 
-Деплоя пока нет: всё работает локально через `wrangler pages dev`.
+Деплоя пока нет: всё работает локально через `wrangler pages dev`. Заглушка `storage` подписывает свои ссылки ключом `R2_SECRET_ACCESS_KEY`, а без него — константой. Это допустимо только в режиме `stub`.
 
 ## 3. Модель данных (D1)
 
 - `materials` (id, name, technology_id, price_per_cm3, colors JSON, active)
 - `technologies` (id, name, min_wall_mm)
 - `executors` (id, name, technology_ids JSON, build_x/y/z_mm, lead_days_min/max, pickup_address, active)
-- `settings` (key, value) — наценка, минимальная цена, шкала скидок, лимит файла, сроки хранения
-- `models` (id, r2_key, filename, units, bbox JSON, volume_cm3, email, expires_at)
-- `orders` (id, public_no, email, address JSON, shipping_cents, tax_cents, total_cents, status, tracking_no, stripe_session_id, created_at)
+- `settings` (key, value) — наценка, минимальная цена, шкала скидок, лимит файла, сроки хранения. Для заглушек: плотность материалов, тарифы USPS по весу, размеры и вес упаковки, ZIP отправителя, `operator_email`
+- `models` (id, r2_key, filename, units, bbox JSON, volume_cm3, email, expires_at). Масштаб отдельно не хранится: `bbox` и `volume_cm3` уже с учётом масштаба, в мм. Запросы ручной оценки — `models.email` и письма в `emails`, отдельной таблицы нет
+- `orders` (id, public_no, email, address JSON, shipping_cents, tax_cents, total_cents, status, tracking_no, stripe_session_id, due_date, created_at). `due_date` — верхняя граница срока (§4)
 - `order_items` (id, order_id, model_id, material_id, color, qty, unit_price_cents)
 - `status_history` (order_id, status, at, note)
 - `emails` (id, to, template, data JSON, sent_at) — журнал отправленных писем, у заглушки это единственный канал

@@ -47,3 +47,22 @@ test('T036: expired files are deleted, files of orders in work are kept, retenti
   const rem = await db.prepare("SELECT * FROM emails WHERE template = 'due_reminder'").first<any>();
   assert.equal(rem.to, 'operator@example.com');
 });
+
+test('T037: a deleted file is marked and not deleted again on the next run', async () => {
+  const e = env();
+  const now = new Date('2026-11-10T12:00:00Z');
+  const db = e.DB;
+  await db.prepare("INSERT INTO models (id, r2_key, filename, units, expires_at) VALUES ('done', 'models/done/f.stl', 'f.stl', 'mm', ?)").bind(new Date(now.getTime() - 40 * DAY).toISOString()).run();
+  await e.FILES.put('models/done/f.stl', new ArrayBuffer(1));
+  const o = await db.prepare("INSERT INTO orders (public_no, email, status) VALUES ('UDONE', 'b@b.test', 'delivered') RETURNING id").first<{ id: number }>();
+  await db.prepare("INSERT INTO order_items (order_id, model_id, material_id, color, qty, unit_price_cents) VALUES (?, 'done', 'pla', 'Black', 1, 100)").bind(o!.id).run();
+  await db.prepare("INSERT INTO status_history (order_id, status, at) VALUES (?, 'delivered', ?)").bind(o!.id, new Date(now.getTime() - 40 * DAY).toISOString()).run();
+
+  const calls: string[] = [];
+  const deps = { db, settings: await getSettings(db), deleteFile: async (k: string) => void calls.push(k), sendEmail: async () => {}, now };
+  assert.deepEqual((await runMaintenance(deps)).deleted, ['models/done/f.stl']);
+  assert.deepEqual((await runMaintenance(deps)).deleted, [], 'second run deletes nothing');
+  assert.deepEqual(calls, ['models/done/f.stl']);
+  const m = await db.prepare("SELECT r2_key FROM models WHERE id = 'done'").first<any>();
+  assert.equal(m.r2_key, 'deleted/models/done/f.stl', 'row kept for a reorder (P3), marked as deleted');
+});
