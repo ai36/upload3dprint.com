@@ -6,9 +6,24 @@ interface D1Statement {
   run(): Promise<unknown>;
 }
 
+export interface R2Object {
+  body: ReadableStream;
+  size: number;
+}
+
+export interface R2Bucket {
+  put(key: string, value: ReadableStream | ArrayBuffer | string | null): Promise<unknown>;
+  get(key: string): Promise<R2Object | null>;
+  head(key: string): Promise<{ size: number } | null>;
+  delete(key: string): Promise<void>;
+}
+
 export interface Env {
   DB: { prepare(query: string): D1Statement };
+  FILES: R2Bucket;
   APP_ORIGINS: string;
+  PUBLIC_API_URL?: string;
+  INTEGRATIONS?: 'stub' | 'live'; // plan §2.3
   R2_ACCOUNT_ID?: string;
   R2_ACCESS_KEY_ID?: string;
   R2_SECRET_ACCESS_KEY?: string;
@@ -18,6 +33,7 @@ export interface Env {
 export interface Context {
   request: Request;
   env: Env;
+  params?: Record<string, string | string[]>;
 }
 
 export class HttpError extends Error {
@@ -34,7 +50,7 @@ function corsHeaders(ctx: Context): Record<string, string> {
   if (!origin || !allowed.includes(origin)) return { Vary: 'Origin' };
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',

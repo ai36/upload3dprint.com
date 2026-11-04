@@ -3,6 +3,21 @@
 Новые записи сверху. Формат: дата — кто — что сделано — ссылки (FR/SC/задачи, файлы).
 
 ## 2026-11-03 — fullstack
+Этапы 2a, 3, 4 spec 001 на заглушках (plan §2.3), без коммитов. Отмечены T014, T016, T017, T020–T025, T030–T036. Открыты T015 и T026: нужна ручная проверка человеком.
+- Переходники `functions/_integrations/` (`index.ts` по `INTEGRATIONS=stub|live`, `payments`, `tax`, `shipping`, `email`, `auth`, `storage`). Live есть только у `storage`: туда перенесена подпись SigV4. Остальные live-адаптеры при вызове бросают «not implemented» — T016, T021.
+- Хранилище-заглушка `functions/api/files/[key].ts`: PUT и GET через `FILES`, ссылки подписаны HMAC и истекают, размер проверяется по `settings` и по ссылке — T016, FR-002, FR-015, VIII.
+- Миграции `0003_emails.sql` (T020) и `0004_checkout.sql`: `orders.due_date` (plan §4) и настройки заглушек с пометкой placeholder: ставка налога 0, тарифы по весу, упаковка, ZIP отправителя, плотность материалов, e-mail оператора, порог напоминания.
+- API: `shipping.ts` (T022), `checkout.ts` (T024), `payment-webhook.ts` (T025), `manual-quote.ts` (T034), `admin/orders|status|label|cancel|manual-quotes|catalog.ts` (T030–T035). Общие функции заказа — `functions/api/_orders.ts`. Статусы — `src/orderStatus.ts` (T023).
+- Страницы: на `index.astro` загрузка файла после расчёта цены, форма адреса с итогом, форма ручной оценки. Состояние переживает Decline через IndexedDB (`src/savedDraft.ts`). Добавлены `checkout-stub.astro` и `admin/index.astro` + `src/admin.ts` — T016, T025, T026, T034, T035.
+- Cron: `workers/cron/` (wrangler.toml, index.ts), логика в `src/maintenance.ts` — T036, FR-015, SC-003.
+- Тесты: 30 (`npm test`), D1 в тестах — `node:sqlite` с настоящими миграциями (`test/d1.ts`).
+- Проверено вживую (`wrangler pages dev`, curl, Chrome на компьютере): файл > 100 МБ → 413; файл попадает в локальный R2 побайтно, строка в `models`; Орегон → тариф, Канада → «We ship within the US only»; Pay → `paid`, письма покупателю и оператору; Decline → возврат на модель с прежними настройками; смена статуса, этикетка `STUB-…`, отмена из `printing` проходит, из `shipped` — нет; ссылка оператора скачивает файл; цена PLA из `/admin` меняет цену на главной. STL на 20 МБ (399 тыс. треугольников) — цена через 1,5 с (NFR-001). Cron через `wrangler dev --test-scheduled`: просроченный файл удалён, напоминание в `emails`.
+- В браузере файлы подавались в `<input>` скриптом. Нативный выбор файла, перетаскивание и телефон не проверены. Найдена и исправлена ошибка: `.card { display: grid }` перекрывал `hidden`.
+
+## 2026-11-03 — main
+Коммиты в `dev`: `01d9ebc` (документация), `b9e2684` (этапы 1–2, T001–T013). T014 и T015 открыты: нет настоящего R2 и ручной проверки. Решение: добавлен переходник `storage` с заглушкой на локальном R2 (plan §2.3) и этап 2a (T016–T017). Fullstack запущен на этапы 2a–4.
+
+## 2026-11-03 — fullstack
 Этапы 1–2 spec 001 (T001–T015), код в ветке `dev`, без коммитов.
 - Каркас: `package.json` (astro, three; dev: wrangler, @types/three), `astro.config.mjs`, `tsconfig.json`, `wrangler.toml`, `migrations/0001_init.sql` (plan §3), `migrations/0002_seed.sql` (значения подрядчика, наценка, минимальная цена и транзит USPS помечены `placeholder`) — T001–T004.
 - API: `functions/api/_lib.ts` (JSON, ошибки, CORS по `APP_ORIGINS`), `catalog.ts`, `quote.ts`, `upload-url.ts` (SigV4 на WebCrypto, подписаны `host` и `content-length`) — T005, T013, T014, FR-002, FR-005–FR-007, FR-015, NFR-006.

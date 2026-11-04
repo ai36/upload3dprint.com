@@ -65,6 +65,7 @@ Worker `workers/cron` (Cron Trigger; у Pages Functions нет расписан�
 | `shipping` | `rate(parcel, zip) → {cents, days}`, `validate(address)`, `buyLabel(order) → tracking` | Тариф по весу из таблицы в `settings`, проверка формата штата и ZIP, трек-номер `STUB-<номер заказа>` |
 | `email` | `send(to, template, data)` | Запись в таблицу `emails` и вывод в консоль |
 | `auth` (оператор) | `isOperator(request)` | Пропускает, если `INTEGRATIONS=stub` |
+| `storage` | `uploadUrl(key, size) → url`, `downloadUrl(key) → url`, `delete(key)` | URL на `/api/files/<key>`: Function пишет и читает через привязку `FILES` (локальный R2 wrangler). Настоящая реализация — подписанные ссылки SigV4 (`upload-url.ts`) |
 
 Деплоя пока нет: всё работает локально через `wrangler pages dev`.
 

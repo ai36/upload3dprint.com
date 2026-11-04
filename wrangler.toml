@@ -5,6 +5,7 @@ pages_build_output_dir = "dist"
 # R2 presigning secrets (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)
 # go to .dev.vars locally and `wrangler pages secret put` in production.
 [vars]
+INTEGRATIONS = "stub" # plan §2.3: stub | live
 PUBLIC_API_URL = "http://localhost:8788"
 APP_ORIGINS = "http://localhost:4321,http://localhost:8788,capacitor://localhost,https://localhost"
 

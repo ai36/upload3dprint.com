@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { preflight, type Context } from '../functions/api/_lib.ts';
-import { presign } from '../functions/api/upload-url.ts';
+import { presign } from '../functions/_integrations/storage.ts';
 
 const ctx = (origin: string) =>
   ({ request: new Request('http://x/api/quote', { method: 'OPTIONS', headers: { Origin: origin } }), env: { APP_ORIGINS: 'https://a.test, capacitor://localhost' } }) as unknown as Context;

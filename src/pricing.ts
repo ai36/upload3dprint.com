@@ -53,11 +53,22 @@ export function price(volume_cm3: number, pricePerCm3: number, qty: number, s: C
   return { total_cents, unit_cents: Math.round(total_cents / qty) };
 }
 
-export function leadDays(c: Catalog) {
+/** Transit defaults to the USPS days in settings; checkout passes the days of the actual rate. */
+export function leadDays(c: Catalog, transit = { min: c.settings.usps_transit_days_min, max: c.settings.usps_transit_days_max }) {
   return {
-    min: c.executor.lead_days_min + HANDLING_DAYS + c.settings.usps_transit_days_min,
-    max: c.executor.lead_days_max + HANDLING_DAYS + c.settings.usps_transit_days_max,
+    min: c.executor.lead_days_min + HANDLING_DAYS + transit.min,
+    max: c.executor.lead_days_max + HANDLING_DAYS + transit.max,
   };
+}
+
+/** Date `days` business days (Mon–Fri) after `from`, as YYYY-MM-DD (UTC). */
+export function addBusinessDays(from: Date, days: number): string {
+  const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
+  while (days > 0) {
+    d.setUTCDate(d.getUTCDate() + 1);
+    if (d.getUTCDay() % 6 !== 0) days--;
+  }
+  return d.toISOString().slice(0, 10);
 }
 
 export function quote(c: Catalog, q: QuoteInput): Quote {

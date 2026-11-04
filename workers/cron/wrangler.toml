@@ -1,0 +1,24 @@
+# T036: file retention (FR-015) and due-date reminders (SC-003).
+# Local run sharing the Pages dev state:
+#   npx wrangler dev --test-scheduled --persist-to ../../.wrangler/state
+name = "upload3dprint-cron"
+main = "index.ts"
+compatibility_date = "2026-09-01"
+
+[triggers]
+crons = ["0 15 * * *"] # daily, 15:00 UTC
+
+[vars]
+INTEGRATIONS = "stub"
+PUBLIC_API_URL = "http://localhost:8788"
+APP_ORIGINS = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "upload3dprint"
+database_id = "00000000-0000-0000-0000-000000000000" # placeholder: same database as the site
+migrations_dir = "../../migrations"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "upload3dprint-models"

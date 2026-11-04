@@ -1,0 +1,56 @@
+---
+// FR-005, FR-007, FR-013, FR-016–FR-018 (T035). Behind Cloudflare Access in live mode (plan §2.3).
+import { LABELS, STATUSES } from '../../orderStatus.ts';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Orders | upload3dprint admin</title>
+  </head>
+  <body>
+    <main>
+      <h1>Orders</h1>
+      <p id="message" role="status" aria-live="polite"></p>
+      <label>Status
+        <select id="filter">
+          <option value="">All paid orders</option>
+          {STATUSES.map((s) => <option value={s}>{LABELS[s]}</option>)}
+        </select>
+      </label>
+      <div id="orders"></div>
+
+      <h2>Manual quote requests</h2>
+      <div id="quotes"></div>
+
+      <h2>Catalog</h2>
+      <h3>Materials</h3>
+      <div id="materials"></div>
+      <button id="add-material" type="button">Add material</button>
+      <h3>Executors</h3>
+      <div id="executors"></div>
+      <h3>Settings</h3>
+      <p class="note">Values are JSON: numbers, quoted text, lists and objects.</p>
+      <div id="settings"></div>
+    </main>
+    <script>
+      import '../../admin.ts';
+    </script>
+    <style is:global>
+      body { margin: 0; font: 15px/1.45 system-ui, sans-serif; color: #1d232a; background: #f7f8fa; }
+      main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+      h2 { margin-top: 2em; }
+      .card { background: #fff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; display: grid; gap: 6px; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .note { color: #5c6773; font-size: 0.9rem; }
+      .error { color: #b3261e; }
+      input, select, textarea, button { font: inherit; padding: 4px 8px; min-width: 0; }
+      textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+      label { display: inline-grid; gap: 2px; font-size: 0.85rem; }
+      table { border-collapse: collapse; width: 100%; }
+      td { padding: 2px 8px 2px 0; vertical-align: top; }
+    </style>
+  </body>
+</html>

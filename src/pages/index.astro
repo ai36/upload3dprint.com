@@ -38,12 +38,55 @@ const accept = SUPPORTED.map((e) => '.' + e.toLowerCase()).join(',');
           <dt>Made and delivered in</dt><dd id="days"></dd>
         </dl>
         <p id="fit" class="error" hidden></p>
+        <p id="upload-state" class="note" role="status" aria-live="polite"></p>
+
+        <form id="manual" class="card" hidden>
+          <h2>Request a manual quote</h2>
+          <p>We will check the file and email you a price.</p>
+          <label>E-mail <input id="m-email" type="email" required autocomplete="email" /></label>
+          <label>Notes (optional) <textarea id="m-note" rows="3" maxlength="2000"></textarea></label>
+          <button type="submit">Request a quote</button>
+          <p id="manual-message" role="status" aria-live="polite"></p>
+        </form>
+
+        <form id="checkout" class="card" hidden>
+          <h2>Shipping</h2>
+          <p class="note">We ship within the US only, by USPS with tracking.</p>
+          <div class="fields">
+            <label class="wide">E-mail <input id="email" type="email" required autocomplete="email" /></label>
+            <label class="wide">Full name <input id="name" required autocomplete="name" /></label>
+            <label class="wide">Street address <input id="line1" required autocomplete="address-line1" /></label>
+            <label class="wide">Apt, suite (optional) <input id="line2" autocomplete="address-line2" /></label>
+            <label>City <input id="city" required autocomplete="address-level2" /></label>
+            <label>State <input id="state" required maxlength="2" placeholder="OR" autocomplete="address-level1" /></label>
+            <label>ZIP code <input id="zip" required inputmode="numeric" placeholder="97201" autocomplete="postal-code" /></label>
+            <label>Country
+              <select id="country" autocomplete="country">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="MX">Mexico</option>
+                <option value="OTHER">Other country</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit">Calculate shipping and total</button>
+          <p id="checkout-message" role="status" aria-live="polite"></p>
+          <dl id="summary" hidden>
+            <dt>Items</dt><dd id="s-items"></dd>
+            <dt>Shipping</dt><dd id="s-shipping"></dd>
+            <dt>Sales tax</dt><dd id="s-tax"></dd>
+            <dt>Total</dt><dd><strong id="s-total"></strong></dd>
+            <dt>Made and delivered in</dt><dd id="s-days"></dd>
+          </dl>
+          <button id="pay" type="button" class="primary" hidden>Pay</button>
+        </form>
       </section>
     </main>
     <script>
       import '../upload.ts';
     </script>
     <style is:global>
+      [hidden] { display: none !important; }
       body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1d232a; background: #f7f8fa; }
       main { max-width: 960px; margin: 0 auto; padding: 16px; }
       h1 { font-size: 1.75rem; margin: 0.5em 0; }
@@ -62,9 +105,20 @@ const accept = SUPPORTED.map((e) => '.' + e.toLowerCase()).join(',');
       dt { color: #5c6773; }
       dd { margin: 0; }
       #price { font-size: 1.4rem; }
+      .note { color: #5c6773; font-size: 0.9rem; margin: 0; }
+      .card { display: grid; gap: 10px; padding: 16px; background: #fff; border-radius: 12px; }
+      .card h2 { font-size: 1.2rem; margin: 0; }
+      .card p { margin: 0; }
+      .card label { display: grid; gap: 2px; font-size: 0.9rem; }
+      .fields { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .fields .wide { grid-column: 1 / -1; }
+      input:not([type]), input[type='email'], textarea { font: inherit; padding: 6px 8px; min-width: 0; }
+      button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid #9aa5b1; background: #fff; cursor: pointer; }
+      button.primary { background: #2f6fb0; border-color: #2f6fb0; color: #fff; font-weight: 600; }
+      button:disabled { opacity: 0.6; cursor: default; }
       @media (min-width: 760px) {
         #panel:not([hidden]) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
-        .preview { height: 420px; grid-row: span 3; }
+        .preview { height: 420px; grid-row: span 5; }
       }
     </style>
   </body>
